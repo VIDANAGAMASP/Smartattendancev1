@@ -12,4 +12,4 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install --default-timeout=100
 COPY services/scheduling-service/app ./app
 
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["ddtrace-run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
