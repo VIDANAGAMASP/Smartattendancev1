@@ -4,13 +4,18 @@ on:
   push:
     branches:
       - main
+      - backend-connect
     paths:
       - "k8s/**"
       - ".github/workflows/deploy.yml"
+  workflow_dispatch:
   workflow_run:
     workflows: ["attendance-service", "scheduling-service", "ai-vision-service"]
     types:
       - completed
+    branches:
+      - main
+      - backend-connect
 
 jobs:
   deploy:
@@ -23,7 +28,7 @@ jobs:
       - name: Set up Kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG1 }}" > ~/.kube/config
+          printf '%s' "${{ secrets.KUBECONFIG1 }}" > ~/.kube/config
           chmod 600 ~/.kube/config
 
       - name: Replace DockerHub Username in Kubernetes Manifests
