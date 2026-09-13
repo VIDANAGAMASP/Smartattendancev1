@@ -1,4 +1,4 @@
-apiVersion: traefik.io/v1alpha1
+apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: strip-scheduling-prefix
@@ -8,7 +8,7 @@ spec:
     prefixes:
       - /scheduling
 ---
-apiVersion: traefik.io/v1alpha1
+apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: strip-attendance-prefix
@@ -18,7 +18,7 @@ spec:
     prefixes:
       - /attendance
 ---
-apiVersion: traefik.io/v1alpha1
+apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: strip-vision-prefix

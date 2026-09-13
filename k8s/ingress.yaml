@@ -1,29 +1,59 @@
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: strip-scheduling-prefix
+  name: scheduling-ingress
   namespace: smart-attendance
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: smart-attendance-strip-scheduling-prefix@kubernetescrd
 spec:
-  stripPrefix:
-    prefixes:
-      - /scheduling
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /scheduling
+            pathType: Prefix
+            backend:
+              service:
+                name: scheduling-service
+                port:
+                  number: 8000
 ---
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: strip-attendance-prefix
+  name: attendance-ingress
   namespace: smart-attendance
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: smart-attendance-strip-attendance-prefix@kubernetescrd
 spec:
-  stripPrefix:
-    prefixes:
-      - /attendance
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /attendance
+            pathType: Prefix
+            backend:
+              service:
+                name: attendance-service
+                port:
+                  number: 8000
 ---
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: strip-vision-prefix
+  name: vision-ingress
   namespace: smart-attendance
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: smart-attendance-strip-vision-prefix@kubernetescrd
 spec:
-  stripPrefix:
-    prefixes:
-      - /vision
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /vision
+            pathType: Prefix
+            backend:
+              service:
+                name: ai-vision-service
+                port:
+                  number: 8000
