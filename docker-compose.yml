@@ -1,0 +1,65 @@
+services:
+  scheduling-service:
+    build:
+      context: .
+      dockerfile: services/scheduling-service/Dockerfile
+    env_file: [services/scheduling-service/.env]
+    environment:
+      SERVICE_NAME: scheduling-service
+    volumes:
+      - ./services/scheduling-service/app:/app/app
+      - ./libs/shared-core/shared_core:/usr/local/lib/python3.12/site-packages/shared_core
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    expose: ["8000"]
+
+  attendance-service:
+    build:
+      context: .
+      dockerfile: services/attendance-service/Dockerfile
+    env_file: [services/attendance-service/.env]
+    environment:
+      SCHEDULING_SERVICE_URL: http://scheduling-service:8000
+      AI_VISION_SERVICE_URL: http://ai-vision-service:8000
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./services/attendance-service/app:/app/app
+      - ./libs/shared-core/shared_core:/usr/local/lib/python3.12/site-packages/shared_core
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    expose: ["8000"]
+    depends_on:
+      scheduling-service:
+        condition: service_started
+      ai-vision-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+  ai-vision-service:
+    build:
+      context: .
+      dockerfile: services/ai-vision-service/Dockerfile
+    env_file: [services/ai-vision-service/.env]
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      TF_CPP_MIN_LOG_LEVEL: 2
+      TF_ENABLE_ONEDNN_OPTS: 0
+    volumes:
+      - ./services/ai-vision-service/app:/app/app
+      - ./libs/shared-core/shared_core:/usr/local/lib/python3.12/site-packages/shared_core
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    expose: ["8000"]
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
