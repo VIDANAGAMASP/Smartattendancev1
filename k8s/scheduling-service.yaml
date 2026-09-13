@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: scheduling-service
-  namespace: smart-attendance
+  namespace: smart-attendance #
   labels:
     app: scheduling-service
 spec:
