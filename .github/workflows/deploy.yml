@@ -23,7 +23,7 @@ jobs:
       - name: Set up Kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          echo "${{ secrets.KUBECONFIG1 }}" > ~/.kube/config
           chmod 600 ~/.kube/config
 
       - name: Replace DockerHub Username in Kubernetes Manifests

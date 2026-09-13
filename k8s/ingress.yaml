@@ -1,96 +1,29 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
 metadata:
-  name: scheduling-ingress
+  name: strip-scheduling-prefix
   namespace: smart-attendance
-  annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: smart-attendance-strip-scheduling-prefix@kubernetescrd
 spec:
-  ingressClassName: traefik
-  rules:
-    - host: attendance.example.com
-      http:
-        paths:
-          - path: /scheduling
-            pathType: Prefix
-            backend:
-              service:
-                name: scheduling-service
-                port:
-                  number: 8000
+  stripPrefix:
+    prefixes:
+      - /scheduling
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
 metadata:
-  name: attendance-ingress
+  name: strip-attendance-prefix
   namespace: smart-attendance
-  annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: smart-attendance-strip-attendance-prefix@kubernetescrd
 spec:
-  ingressClassName: traefik
-  rules:
-    - http:
-        paths:
-          - path: /attendance
-            pathType: Prefix
-            backend:
-              service:
-                name: attendance-service
-                port:
-                  number: 8000
+  stripPrefix:
+    prefixes:
+      - /attendance
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
 metadata:
-  name: vision-ingress
+  name: strip-vision-prefix
   namespace: smart-attendance
-  annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: smart-attendance-strip-vision-prefix@kubernetescrd
 spec:
-  ingressClassName: traefik
-  rules:
-    - http:
-        paths:
-          - path: /vision
-            pathType: Prefix
-            backend:
-              service:
-                name: ai-vision-service
-                port:
-                  number: 8000
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: grafana-ingress
-  namespace: monitoring
-spec:
-  ingressClassName: traefik
-  rules:
-    - http:
-        paths:
-          - path: /grafana
-            pathType: Prefix
-            backend:
-              service:
-                name: grafana
-                port:
-                  number: 3000
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: kibana-ingress
-  namespace: logging
-spec:
-  ingressClassName: traefik
-  rules:
-    - http:
-        paths:
-          - path: /kibana
-            pathType: Prefix
-            backend:
-              service:
-                name: kibana
-                port:
-                  number: 5601
+  stripPrefix:
+    prefixes:
+      - /vision

@@ -7,10 +7,10 @@ metadata:
   labels:
     app: ai-vision-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: ai-vision-service
+      app:ai-vision-service
   template:
     metadata:
       labels:
