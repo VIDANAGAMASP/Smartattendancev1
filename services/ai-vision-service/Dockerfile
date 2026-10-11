@@ -1,21 +1,14 @@
 FROM python:3.12-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    libgl1 \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libxcb1 \
-    && rm -rf /var/lib/apt/lists/*
-
+# Install shared-core first
 COPY libs/shared-core /shared-core
-RUN --mount=type=cache,target=/root/.cache/pip pip install --default-timeout=1000 /shared-core
+RUN uv pip install --system --no-cache /shared-core
 
 COPY services/ai-vision-service/pyproject.toml .
-RUN --mount=type=cache,target=/root/.cache/pip pip install --default-timeout=1000 .
+RUN uv pip install --system --no-cache .
 
 COPY services/ai-vision-service/app ./app
 

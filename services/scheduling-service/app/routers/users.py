@@ -6,9 +6,10 @@ from typing import List, Optional
 from shared_core.db.session import get_db
 from shared_core.auth.jwt import get_current_user
 from shared_core.auth.rbac import require_role
-from shared_core.schemas.identity import StudentOut, LecturerOut, UserOut, UserRoleUpdate, StudentUpdate, UserDirectoryOut, StudentRegistrationRequest
+from shared_core.schemas.identity import StudentOut, LecturerOut, UserOut, UserRoleUpdate, StudentUpdate, UserDirectoryOut, StudentRegistrationRequest, LecturerRegistrationRequest, AdminRegistrationRequest
 from shared_core.models.identity import User
 from shared_core.models.enums import UserRole, UserStatus
+from typing import Union
 
 from shared_core.audit import audit
 
@@ -20,14 +21,14 @@ except ImportError:  # pragma: no cover
 router = APIRouter(prefix="/users", tags=["users"])
 
 @router.post("/register", response_model=UserOut)
-def register_student_user(
-    data: StudentRegistrationRequest,
+def register_user(
+    data: Union[StudentRegistrationRequest, LecturerRegistrationRequest, AdminRegistrationRequest],
     current_user: User = Depends(require_role("admin")),
     db: Session = Depends(get_db)
 ):
     try:
-        user = user_service.register_student(db, data, current_user.id)
-        audit(db, current_user.id, "user.register", "user", user.id, new_data={"email": data.email, "role": "student"})
+        user = user_service.register_user(db, data, current_user.id)
+        audit(db, current_user.id, "user.register", "user", user.id, new_data={"email": data.email, "role": data.role})
         return user
     except Exception as e:
         if isinstance(e, HTTPException):
@@ -51,7 +52,26 @@ def get_me(current_user: User = Depends(get_current_user), db: Session = Depends
         payload.update({"lecturer_code": p.lecturer_code, "display_name": p.display_name if hasattr(p, "display_name") else p.email, "email": p.email or current_user.username, "department_id": p.department_id})
     elif getattr(current_user.role, "value", current_user.role) == "student" and current_user.student_profile:
         p = current_user.student_profile
-        payload.update({"student_index_no": p.student_index_no, "full_name": p.full_name, "name_with_initials": p.name_with_initials, "display_name": p.display_name, "department_id": p.department_id, "academic_year_id": p.academic_year_id, "photo_url": p.photo_url})
+        payload.update({
+            "student_index_no": p.student_index_no,
+            "full_name": p.full_name,
+            "name_with_initials": p.name_with_initials,
+            "display_name": p.display_name,
+            "department_id": p.department_id,
+            "academic_year_id": p.academic_year_id,
+            "photo_url": p.photo_url,
+            "department_name": p.department.name if p.department else None,
+            "department_code": p.department.code if p.department else None,
+            "faculty_name": p.department.faculty_name if p.department else None,
+            "faculty_head": p.department.faculty_head if p.department else None,
+            "academic_year_name": p.academic_year.name if p.academic_year else None,
+            "academic_year_level": p.academic_year.year_level if p.academic_year else None,
+            "gender": getattr(p.gender, "value", p.gender) if hasattr(p, "gender") and p.gender else None,
+            "date_of_birth": str(p.date_of_birth) if p.date_of_birth else None,
+            "nic": p.nic,
+            "contact_number": p.contact_number,
+            "address": p.address,
+        })
     return payload
 
 @router.get("", response_model=List[UserOut])
