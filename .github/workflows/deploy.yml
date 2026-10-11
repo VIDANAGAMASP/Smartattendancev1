@@ -42,7 +42,11 @@ jobs:
           kubectl apply -f k8s/scheduling-service.yaml
           kubectl apply -f k8s/attendance-service.yaml
           kubectl apply -f k8s/ai-vision-service.yaml
-          kubectl apply -f k8s/traefik-helmchartconfig.yaml
+          if kubectl get crd helmchartconfigs.helm.cattle.io >/dev/null 2>&1; then
+            kubectl apply -f k8s/traefik-helmchartconfig.yaml
+          else
+            echo "Skipping Traefik HelmChartConfig: helm.cattle.io CRD not available in cluster."
+          fi
           kubectl apply -f k8s/traefik-middleware.yaml
           kubectl apply -f k8s/ingress.yaml
 
